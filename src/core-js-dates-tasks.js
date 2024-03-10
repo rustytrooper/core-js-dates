@@ -131,8 +131,14 @@ function getCountDaysOnPeriod(dateStart, dateEnd) {
  * '2024-02-02', { start: '2024-02-02', end: '2024-03-02' } => true
  * '2024-02-10', { start: '2024-02-02', end: '2024-03-02' } => true
  */
-function isDateInPeriod(/* date, period */) {
-  throw new Error('Not implemented');
+function isDateInPeriod(date, period) {
+  const searchDate = new Date(date);
+  const startDate = new Date(period.start);
+  const endDate = new Date(period.end);
+  if (searchDate >= startDate && searchDate <= endDate) {
+    return true;
+  }
+  return false;
 }
 
 /**
@@ -146,8 +152,20 @@ function isDateInPeriod(/* date, period */) {
  * '1999-01-05T02:20:00.000Z' => '1/5/1999, 2:20:00 AM'
  * '2010-12-15T22:59:00.000Z' => '12/15/2010, 10:59:00 PM'
  */
-function formatDate(/* date */) {
-  throw new Error('Not implemented');
+function formatDate(date) {
+  const unFormatDate = new Date(date);
+  const options = {
+    month: 'numeric',
+    day: 'numeric',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: 'numeric',
+    second: 'numeric',
+    hour12: true,
+    timeZone: 'Europe/London',
+  };
+  const output = new Intl.DateTimeFormat('en-US', options).format(unFormatDate);
+  return output;
 }
 
 /**
@@ -162,8 +180,22 @@ function formatDate(/* date */) {
  * 12, 2023 => 10
  * 1, 2024 => 8
  */
-function getCountWeekendsInMonth(/* month, year */) {
-  throw new Error('Not implemented');
+function getCountWeekendsInMonth(month, year) {
+  const amountOfDays = new Date(year, month, 0).getDate();
+  const amountOfDaysArr = [...Array(amountOfDays).keys()].map((el) => el + 1);
+  const matrix = [];
+  const weekDaysNum = 7;
+  for (let i = 0; i < amountOfDaysArr.length; i += weekDaysNum) {
+    matrix.push(amountOfDaysArr.slice(i, i + weekDaysNum));
+  }
+  const totalAmountOfWeekEnds = matrix.reduce((count, week) => {
+    const weekEnd = week.filter((day) => {
+      const weekDayInd = new Date(year, month - 1, day).getDay();
+      return weekDayInd === 0 || weekDayInd === 6;
+    });
+    return count + weekEnd.length;
+  }, 0);
+  return totalAmountOfWeekEnds;
 }
 
 /**
