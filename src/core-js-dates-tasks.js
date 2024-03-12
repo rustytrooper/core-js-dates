@@ -162,12 +162,13 @@ function formatDate(date) {
     minute: 'numeric',
     second: 'numeric',
     hour12: true,
-    timeZone: 'Europe/London',
+    timeZone: 'UTC',
   };
-  const output = new Intl.DateTimeFormat('en-US', options).format(unFormatDate);
+  const output = new Intl.DateTimeFormat('en-US', options)
+    .format(unFormatDate)
+    .replace(/\u202f/g, ' ');
   return output;
 }
-
 /**
  * Returns the total number of weekend days (Saturdays and Sundays) in a specified month and year.
  *
@@ -211,8 +212,50 @@ function getCountWeekendsInMonth(month, year) {
  * Date(2024, 0, 31) => 5
  * Date(2024, 1, 23) => 8
  */
-function getWeekNumberByDate(/* date */) {
-  throw new Error('Not implemented');
+function getWeekNumberByDate(date) {
+  const dateObj = new Date(date);
+  const day = dateObj.getDate();
+  const month = dateObj.getMonth();
+  const year = dateObj.getFullYear();
+  const calendar = [];
+  for (let i = 0; i <= month; i += 1) {
+    const newDate = new Date(year, i + 1, 0).getDate();
+    const dateArr = [...Array(newDate).keys()].map((el) => {
+      const dayEl = el + 1;
+      return dayEl;
+    });
+    calendar.push(dateArr);
+  }
+  const weeks = calendar.reduce((acc, monthEl) => {
+    const monthArr = [];
+    const weeksInMonth = [];
+    while (monthEl.length > 0) {
+      weeksInMonth.push(monthEl.splice(0, 7));
+    }
+    monthArr.push(weeksInMonth);
+    return acc.concat(monthArr);
+  }, []);
+
+  let weekNum = 0;
+  let lastMonth = [];
+
+  for (let i = 0; i < weeks.length; i += 1) {
+    if (i < month) {
+      lastMonth = lastMonth.concat(weeks[i]);
+    }
+  }
+  for (let i = 0; i < weeks.length; i += 1) {
+    for (let j = 0; j < weeks[i].length; j += 1) {
+      for (let k = 0; k < weeks[i][j].length; k += 1) {
+        if (i === month && weeks[i][j][k] === day && month !== 0) {
+          weekNum = lastMonth.length + j;
+        } else if (i === month && weeks[i][j][k] === day && month === 0) {
+          weekNum = j + 1;
+        }
+      }
+    }
+  }
+  return weekNum;
 }
 
 /**
